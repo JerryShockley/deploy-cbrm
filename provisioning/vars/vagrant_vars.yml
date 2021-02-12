@@ -1,0 +1,37 @@
+---
+# These security settings differ between VirtualBox and Digital Ocean.
+# These changes for postgresql connections lets us connection
+# do the db via Vagrant forwarded port 5432 to the db inside
+# the virtual machine.
+postgresql_hba_entries:
+  - { type: local, database: all, user: postgres, auth_method: peer }
+  - { type: local, database: all, user: "{{ privileged_user }}",
+      auth_method: trust }
+  - { type: local, database: all, user: all, auth_method: md5 }
+  - { type: host, database: all, user: all,
+      address: '10.0.2.2/32', auth_method: md5 }
+  - { type: host, database: all, user: all,
+      address: '127.0.0.1/32', auth_method: md5 }
+  - { type: host, database: all, user: all,
+      address: '::1/128', auth_method: md5 }
+
+ufw_rules:
+  - to_port: "{{ ansible_port }}"
+    rule: allow
+    proto: tcp
+    comment: 'Allow SSH'
+  - to_port: "{{ db_guest_port }}"
+    rule: allow
+    proto: tcp
+    comment: 'Allow PostgreSQL'
+  - from_ip: '10.0.2.2/32'
+    rule: allow
+    comment: 'Connect via VirtualBox'
+  - to_port: "{{ guest_port }}"
+    rule: allow
+    comment: 'Allow HTTP'
+  - from_ip: "127.0.0.1/8"
+    rule: allow
+    comment: 'Allow localhost'
+ufw_default_forward_policy: ACCEPT
+ufw_logging: full

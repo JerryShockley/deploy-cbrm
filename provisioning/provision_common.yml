@@ -1,0 +1,68 @@
+---
+# Get our public facing IP address for Postgresql config files.
+# - hosts: localhost
+#   connection: localhost
+
+#   tasks:
+#     - name: Determine client/control machine public ip address.
+#       ipify_facts:
+#       register: public_ip
+#     - debug:
+#         var: hostvars['localhost']
+
+
+# - hosts: all
+#   become: true
+#   remote_user: root
+
+  # vars:
+  #   db_mgr: node_db_user
+
+  # vars_files:
+  #   - vars/main.yml
+
+  # tasks:
+- name: Refresh apt-get
+  apt:
+    update_cache: true
+    cache_valid_time: 7200
+
+- name: Include vagrant variables.
+  include_vars:
+    file: vars/vagrant_vars.yml
+  when: ansible_user == 'vagrant'
+
+- name: Include non-vagrant variables.
+  include_vars:
+    file: vars/nonvagrant_vars.yml
+  when: ansible_user != 'vagrant'
+
+# - name: Include weareinteractive.ufw role
+#   import_role:
+#     name: weareinteractive.ufw
+#   vars:
+#   become: true
+
+- name: Include PostgreSQL role.
+  import_role:
+    name: geerlingguy.postgresql
+  vars:
+    - client_public_ip: hostvars['localhost'].ipify_public_ip
+  become: true
+  become_user: root
+
+- name: Assign app_user as owner of app db.
+  postgresql_owner:
+    db: "{{ db_name }}"
+    new_owner: "{{ app_user }}"
+    obj_type: database
+  become: yes
+  become_user: postgres
+
+- name: Create www root dir.
+  file:
+    path: "{{ www_root_dir }}"
+    mode: 0755
+    group: "{{ nginx_user }}"
+    owner: "{{ nginx_user }}"
+    state: directory

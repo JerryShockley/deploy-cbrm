@@ -1,0 +1,88 @@
+# and granting them to a privileged user who is not root.
+- hosts: all
+  gather_facts: false
+  # become: true
+  vars_files:
+    - vars/main.yml
+  roles:
+    # This must run before role edit_inventory file as the username
+    # for logging is changed from the default root to privileged_user.
+    - role: jerryshockley.secure_ssh
+      vars:
+        users:
+          - {name: "{{ privileged_user }}", ssh_key_file: ~/.ssh/id_rsa.pub}
+          - {name: "{{ app_user }}"}
+
+  # Update ansible_user in hosts file to match the privileged
+  # user set by role: jerryshockley.secure_ssh.
+
+- hosts: localhost
+  connection: localhost
+  gather_facts: false
+  roles:
+    - role: jerryshockley.edit_inventory_file
+      when: ansible_user != 'vagrant'
+      vars:
+        host_user: "{{ privileged_user }}"
+        host_file: "{{ inventory_file }}"
+
+  vars_files:
+    - vars/main.yml
+    - vars/digital_ocean.yml
+
+- hosts: all
+  vars_files: vars/main.yml
+
+  roles:
+    - geerlingguy.git
+    - jasonheecs.ubuntu-fail2ban
+    - weareinteractive.nodejs
+
+
+  tasks:
+
+    - name: Install setfacl support for Ansible installs.
+      apt:
+        name: acl
+        state: present
+        cache_valid_time: 7200
+
+    - name: Include vagrant variables.
+      include_vars:
+        file: vars/vagrant_vars.yml
+      when: ansible_user == 'vagrant'
+
+    - name: Include non-vagrant variables.
+      include_vars:
+        file: vars/nonvagrant_vars.yml
+      when: ansible_user != 'vagrant'
+
+    - name: Include weareinteractive.ufw role
+      import_role:
+        name: weareinteractive.ufw
+      become: true
+
+    - name: Include PostgreSQL role.
+      import_role:
+        name: geerlingguy.postgresql
+      become: true
+      become_user: root
+
+    - name: Assign app_user as owner of app db.
+      postgresql_owner:
+        db: "{{ db_name }}"
+        new_owner: "{{ app_user }}"
+        obj_type: database
+      become: yes
+      become_user: postgres
+
+    - name: Create www root dir.
+      file:
+        path: "{{ www_root_dir }}"
+        mode: 0755
+        group: "{{ app_user }}"
+        owner: "{{ app_user }}"
+        state: directory
+
+  # Deploy application
+- import_playbook: deploy.yml
