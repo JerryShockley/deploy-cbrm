@@ -16,4 +16,5 @@ tags
 *.pyc
 *.sw[nop]
 .bundle
+.cache/
 /bower_components/
