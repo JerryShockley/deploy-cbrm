@@ -1,44 +1,43 @@
 ---
+
 - hosts: all
   gather_facts: false
-  roles:
-    - role: weareinteractive.pm2
-      become: true
-      vars:
-        pm2_user: "{{ privileged_user }}"
-        pm2_upstart: true
-        pm2_service_name: cbrm
+  become: true
 
   vars_files:
     - vars/main.yml
 
   tasks:
     - name: Ensure Node.js app folder exists.
-      file:
+      ansible.builtin.file:
         path: "{{ node_app_location }}"
         state: directory
 
     - name: Check out app from Github.
-      git:
+      ansible.builtin.git:
         repo: "{{ git_repo }}"
         dest: "{{ node_app_location }}"
         accept_hostkey: true
         force: true
-        version: 1.3.0
+        version: HEAD
       register: app_updated
 
     - name: Install app dependencies defined in package.json.
-      npm: "path={{ node_app_location }}/app"
+      community.general.npm:
+        path: "{{ node_app_location }}"
+        state: present
 
-    - name: Check list of running Node.js apps.
-      command: pm2 list
-      register: app_list
-      changed_when: false
+    - name: Set owner and groups on app files.
+      ansible.builtin.command:
+        cmd: "chown -R {{ app_user }}:{{ app_user }} {{ node_app_location }}"
+      register: perm_set
+      when: app_updated and ansible_user != 'vagrant'
+      become: true
 
-    - debug:
-        var: app_list
-
-    - name: Start Nodejs app.
-      command: "pm2 start {{ node_app_location }}/src/app.js\
-                host={{ myhost }} port={{ myport }}"
-      when: "app_list.stdout.find(node_app_location + '/app/app.js') == -1"
+    - name: Start PM2 and app.
+      ansible.builtin.shell:
+        cmd: "PORT={{ guest_port }} pm2 start ecosystem.config.js"
+        chdir: "{{ node_app_location }}/"
+      when: app_updated
+      become: true
+      become_user: "{{ app_user }}"
