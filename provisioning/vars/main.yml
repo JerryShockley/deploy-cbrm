@@ -4,7 +4,7 @@
 
 # Ansible inventory file used by playbook: provision_debian.yml.
 # This file is created if it doesn't already exist.
-node_app_location: '/var/www/node_app'
+node_app_location: '/var/www/cbrm'
 nodejs_version: "12.x"
 node_packages:
   - pm2
