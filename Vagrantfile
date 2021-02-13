@@ -9,16 +9,16 @@ user = ENV['USER']
 vars = YAML.load_file "./vagrant.config/vagrant.#{user}.yml"
 
 # Reused vars for DRY.
-guest_sync_dir = '/var/www/node_app'
+guest_sync_dir = '/var/www/cbrm'
 guest_port = '8090'
 guest_db_port = '5432'
 
 Vagrant.configure("2") do |config|
   config.vm.box = "geerlingguy/ubuntu2004"
   config.vm.network "forwarded_port", guest: guest_port,
-    host: vars['hport']
+    host: vars['hport'], auto_correct: true
   config.vm.network "forwarded_port", guest: guest_db_port,
-    host: vars['dbhport']
+    host: vars['dbhport'], auto_correct: true
   config.ssh.insert_key = false
   config.vm.synced_folder vars['hfolder'], guest_sync_dir
 
@@ -48,7 +48,9 @@ Vagrant.configure("2") do |config|
       host_port: vars['hport'],
       guest_port: guest_port,
       db_guest_port:  guest_db_port,
-      node_app_location: guest_sync_dir
+      node_app_location: guest_sync_dir,
+      privileged_user: "vagrant",
+      app_user: "vagrant"
     }
     # Enables passing of args to Ansible from Vagrant CLI
     # via the ANSIBLE_ARGS environment variable
