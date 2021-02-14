@@ -44,13 +44,13 @@
 
   tasks:
 
-    - name: Install setfacl support for Ansible installs.
+    - name: Install OS utility packages.
       apt:
         name: "{{ item }}"
         state: present
         cache_valid_time: 7200
       loop:
-        - acl
+        - acl # Install setfacl support for Ansible installs.
         - apt-transport-https
         - ca-certificates
         - build-essential
