@@ -36,7 +36,7 @@
 
     - name: Start PM2 and app.
       ansible.builtin.shell:
-        cmd: "PORT={{ guest_port }} pm2 start ecosystem.config.js"
+        cmd: "{{ pm_env_str }} pm2 start ecosystem.config.js"
         chdir: "{{ node_app_location }}/"
       when: app_updated
       become: true
