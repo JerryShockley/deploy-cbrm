@@ -46,11 +46,12 @@ Vagrant.configure("2") do |config|
     ansible.extra_vars = {
       vagrant_ssh_keyfile: "~/.vagrant.d/insecure_private_key",
       host_port: vars['hport'],
-      guest_port: guest_port,
-      db_guest_port:  guest_db_port,
+      remote_port: guest_port,
+      remote_dbport:  guest_db_port,
       node_app_location: guest_sync_dir,
       privileged_user: "vagrant",
-      app_user: "vagrant"
+      app_user: "vagrant",
+      node_env: "development"
     }
     # Enables passing of args to Ansible from Vagrant CLI
     # via the ANSIBLE_ARGS environment variable

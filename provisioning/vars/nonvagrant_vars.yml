@@ -11,7 +11,7 @@ postgresql_hba_entries:
 ufw_rules:
   - { port: 22, rule: allow, comment: 'Allow SSH' }
   # - { port: "{{ host_port }}", rule: allow, comment: 'Allow HTTP' }
-  - { port: "{{ guest_port }}", rule: allow, comment: 'Allow HTTP' }
+  - { port: "{{ remote_port }}", rule: allow, comment: 'Allow HTTP' }
   - { from_ip: "127.0.0.1/8", comment: 'Allow localhost' }
 ufw_default_forward_policy: ACCEPT
 ufw_logging: full

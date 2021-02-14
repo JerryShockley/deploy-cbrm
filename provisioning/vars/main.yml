@@ -1,6 +1,10 @@
 ---
-# Port used by nodejs
-# guest_port: 5000
+pm_env_str: >
+  PORT={{ remote_port }}
+  USR={{ app_user }}
+  DB={{ db_name }}
+  PASSWD={{ app_user_passwd }}
+  DBPORT={{ remote_dbport }}
 
 # Ansible inventory file used by playbook: provision_debian.yml.
 # This file is created if it doesn't already exist.
@@ -17,6 +21,8 @@ privileged_user: priv_user
 # infrastructure.
 app_user: app_user
 # To create db and roles. Not a superuser.
+
+app_user_passwd: hello
 
 admin_db_user: "{{ privileged_user }}"
 db_name: cbrm

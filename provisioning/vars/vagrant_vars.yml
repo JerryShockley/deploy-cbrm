@@ -20,14 +20,14 @@ ufw_rules:
     rule: allow
     proto: tcp
     comment: 'Allow SSH'
-  - to_port: "{{ db_guest_port }}"
+  - to_port: "{{ remote_dbport }}"
     rule: allow
     proto: tcp
     comment: 'Allow PostgreSQL'
   - from_ip: '10.0.2.2/32'
     rule: allow
     comment: 'Connect via VirtualBox'
-  - to_port: "{{ guest_port }}"
+  - to_port: "{{ remote_port }}"
     rule: allow
     comment: 'Allow HTTP'
   - from_ip: "127.0.0.1/8"
