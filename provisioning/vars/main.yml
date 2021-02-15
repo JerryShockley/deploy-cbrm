@@ -25,7 +25,6 @@ app_user: app_user
 app_user_passwd: hello
 
 admin_db_user: "{{ privileged_user }}"
-db_name: cbrm
 # Postgresql driver for Python3
 postgresql_python_library: python3-psycopg2
 
