@@ -74,6 +74,9 @@
       loop:
         - npm
         - pm2
+        - sequelize
+        - nodemon
+        - sequelize-cli
 
     - name: Include weareinteractive.ufw role
       import_role:
