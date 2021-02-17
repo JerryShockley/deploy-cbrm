@@ -34,9 +34,14 @@
       when: app_updated and ansible_user != 'vagrant'
       become: true
 
+    - name: Run DB migrations to create tables.
+      ansible.builtin.command:
+        cmd: "npx sequelize db:migrate"
+        chdir: "{{ node_app_location }}"
+
     - name: Start PM2 and app.
       ansible.builtin.shell:
-        cmd: "{{ pm_env_str }} pm2 start ecosystem.config.js"
+        cmd: "{{ server_start_cmd }}"
         chdir: "{{ node_app_location }}/"
       when: app_updated
       become: true
