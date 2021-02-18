@@ -39,10 +39,10 @@
         cmd: "npx sequelize db:migrate"
         chdir: "{{ node_app_location }}"
 
-    - name: Start PM2 and app.
+    - name: Start Node app using Process Manager.
       ansible.builtin.shell:
-        cmd: "{{ server_start_cmd }}"
-        chdir: "{{ node_app_location }}/"
+        cmd: pm2 start ecosystem.config.js
+        chdir: "{{ node_app_location }}"
       when: app_updated
       become: true
       become_user: "{{ app_user }}"
