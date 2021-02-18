@@ -70,9 +70,8 @@
       community.general.npm:
         name: "{{ item }}"
         global: true
-        version: next
+      become: true
       loop:
-        - npm
         - pm2
         - sequelize
         - nodemon
