@@ -1,6 +1,5 @@
 ---
 db_name: cbrm_dev
-server_start_cmd: "npm run serverstart"
 
 # These security settings differ between VirtualBox and Digital Ocean.
 # These changes for postgresql connections lets us connection
