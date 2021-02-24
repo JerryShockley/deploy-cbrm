@@ -19,6 +19,8 @@ Vagrant.configure("2") do |config|
     host: vars['hport'], auto_correct: true
   config.vm.network "forwarded_port", guest: guest_db_port,
     host: vars['dbhport'], auto_correct: true
+  config.vm.network "forwarded_port", guest: "9229",
+    host: vars['debugport'], auto_correct: true
   config.ssh.insert_key = false
   config.vm.synced_folder vars['hfolder'], guest_sync_dir
 
@@ -48,6 +50,7 @@ Vagrant.configure("2") do |config|
       host_port: vars['hport'],
       remote_port: guest_port,
       remote_dbport:  guest_db_port,
+      debug_port: "9229",
       node_app_location: guest_sync_dir,
       privileged_user: "vagrant",
       app_user: "vagrant",
