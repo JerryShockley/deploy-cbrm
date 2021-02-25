@@ -9,9 +9,8 @@ pm_env_str: >
 # Ansible inventory file used by playbook: provision_debian.yml.
 # This file is created if it doesn't already exist.
 node_app_location: '/var/www/cbrm'
-nodejs_version: "12.x"
-node_packages:
-  - pm2
+nodejs_version: "14.x"
+node_packages: [ ]
 git_repo: https://github.com/JerryShockley/cbrm.git
 # git_repo: git@github.com:JerryShockley/express-hello-world-app.git
 # nodejs_install_npm_user: "{{ ansible_user }}"
