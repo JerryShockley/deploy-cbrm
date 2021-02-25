@@ -10,6 +10,7 @@ pm_env_str: >
 # This file is created if it doesn't already exist.
 node_app_location: '/var/www/cbrm'
 nodejs_version: "14.x"
+npm_version: ^7.5.0
 global_node_packages:
   - {name: 'pm2', version: '^4.5.0'}
   - {name: 'nodemon', version: '^2.0.7'}
