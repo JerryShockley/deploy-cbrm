@@ -34,8 +34,6 @@ Vagrant.configure("2") do |config|
   config.vm.provision "ansible" do |ansible|
     ansible.compatibility_mode="2.0"
     ansible.playbook = 'provisioning/playbook.yml'
-    ansible.inventory_path = ".vagrant/provisioners/ansible/inventory/" +
-                              "vagrant_ansible_inventory"
     ansible.host_vars = {
       "ansible_python_interpreter" => "/usr/bin/python3",
       "ansible_ssh_extra_args" => "-o StrictHostKeyChecking=no"
