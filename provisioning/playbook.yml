@@ -13,6 +13,7 @@
         users:
           - {name: "{{ privileged_user }}", ssh_key_file: ~/.ssh/id_rsa.pub}
           - {name: "{{ app_user }}"}
+      when: ansible_user != 'vagrant'
 
   # Update ansible_user in hosts file to match the privileged
   # user set by role: jerryshockley.secure_ssh.
@@ -66,16 +67,20 @@
         file: vars/nonvagrant_vars.yml
       when: ansible_user != 'vagrant'
 
-    - name: Install global npm packages.
+    - name: Install updated npm.
+      ansible.builtin.command: npm install -g npm@^7.5.0
+      become: true
+
+    - name: Install global npm tool packages.
       community.general.npm:
-        name: "{{ item }}"
+        name: "{{ item.name }}"
+        version: "{{ item.version }}"
         global: true
       become: true
       loop:
-        - pm2
-        - sequelize
-        - nodemon
-        - sequelize-cli
+        - {name: 'pm2', version: '^4.5.0'}
+        - {name: 'nodemon', version: '^2.0.0'}
+        - {name: 'sequelize-cli', version: '^6.2.0'}
 
     - name: Include weareinteractive.ufw role
       import_role:
