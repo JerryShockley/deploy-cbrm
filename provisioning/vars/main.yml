@@ -10,7 +10,11 @@ pm_env_str: >
 # This file is created if it doesn't already exist.
 node_app_location: '/var/www/cbrm'
 nodejs_version: "14.x"
-node_packages: [ ]
+global_node_packages:
+  - {name: 'pm2', version: '^4.5.0'}
+  - {name: 'nodemon', version: '^2.0.7'}
+  - {name: 'sequelize-cli', version: '^6.2.0'}
+
 git_repo: https://github.com/JerryShockley/cbrm.git
 # git_repo: git@github.com:JerryShockley/express-hello-world-app.git
 # nodejs_install_npm_user: "{{ ansible_user }}"
