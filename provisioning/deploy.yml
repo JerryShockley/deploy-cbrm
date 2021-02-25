@@ -23,9 +23,9 @@
       register: app_updated
 
     - name: Install app dependencies defined in package.json.
-      community.general.npm:
-        path: "{{ node_app_location }}"
-        state: present
+      ansible.builtin.command:
+        cmd: npm install
+        chdir: "{{ node_app_location }}"
 
     - name: Set owner and groups on app files.
       ansible.builtin.command:
