@@ -39,6 +39,11 @@
         cmd: "npx sequelize db:migrate"
         chdir: "{{ node_app_location }}"
 
+    - name: Seed DB.
+      ansible.builtin.command:
+        cmd: "npx sequelize db:seed:all"
+        chdir: "{{ node_app_location }}"
+
     - name: Start Node app using Process Manager.
       ansible.builtin.shell:
         cmd: pm2 start ecosystem.config.js
