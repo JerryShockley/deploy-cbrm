@@ -5,6 +5,7 @@
   become: true
 
   vars_files:
+    - vars/vault.yml
     - vars/main.yml
 
   tasks:
@@ -21,6 +22,12 @@
         force: true
         version: HEAD
       register: app_updated
+
+    - name: Set db port on app config
+      ansible.builtin.lineinfile:
+        path: "{{ node_app_location }}/config/config.json"
+        regex: port
+        line: "  \"port\": \"{{ host_db_port }}\""
 
     - name: Install app dependencies defined in package.json.
       ansible.builtin.command:
