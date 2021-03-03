@@ -45,6 +45,7 @@ Vagrant.configure("2") do |config|
     ansible.become = true
     ansible.extra_vars = {
       vagrant_ssh_keyfile: "~/.vagrant.d/insecure_private_key",
+      host_db_port: vars['dbhport'],
       host_port: vars['hport'],
       remote_port: guest_port,
       remote_dbport:  guest_db_port,
