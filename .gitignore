@@ -18,3 +18,5 @@ tags
 .bundle
 .cache/
 /bower_components/
+
+provisioning/hosts
