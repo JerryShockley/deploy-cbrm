@@ -1,6 +1,6 @@
 ---
 db_name: cbrm_dev
-
+dev_db_password: hello
 # These security settings differ between VirtualBox and Digital Ocean.
 # These changes for postgresql connections lets us connection
 # do the db via Vagrant forwarded port 5432 to the db inside
@@ -22,7 +22,7 @@ ufw_rules:
     rule: allow
     proto: tcp
     comment: 'Allow SSH'
-  - to_port: "{{ remote_dbport }}"
+  - to_port: "{{ remote_db_port }}"
     rule: allow
     proto: tcp
     comment: 'Allow PostgreSQL'
@@ -46,3 +46,8 @@ ufw_rules:
     comment: 'Allow localhost'
 ufw_default_forward_policy: ACCEPT
 ufw_logging: full
+
+postgresql_users:
+  - name: "{{ privileged_user }}"
+    password: "{{ dev_db_password }}"
+    role_attr_flags: CREATEDB,CREATEROLE,LOGIN
