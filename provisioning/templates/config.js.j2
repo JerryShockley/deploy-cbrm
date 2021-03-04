@@ -1,7 +1,7 @@
 module.exports = {
   development: {
     username: `vagrant`,
-    password: `hello`,
+    password: `{{ dev_db_password }}`,
     database: `{{ db_name }}`,
     host: `127.0.0.1`,
     port: {{ remote_db_port }},
