@@ -23,11 +23,14 @@
         version: HEAD
       register: app_updated
 
-    - name: Set db port on app config
-      ansible.builtin.lineinfile:
-        path: "{{ node_app_location }}/config/config.json"
-        regex: port
-        line: "  \"port\": \"{{ host_db_port }}\""
+
+    - name: Apply App DB config template.
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/templates/config.js.j2"
+        dest: "{{ node_app_location }}/config/config.js"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0644"
 
     - name: Install app dependencies defined in package.json.
       ansible.builtin.command:
