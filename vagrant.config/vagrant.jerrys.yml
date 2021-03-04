@@ -37,6 +37,6 @@ hfolder: '/Users/jerrys/src/prototypes/cbrm'
 hport: '8080'
 # DB port number used on the host OS outside the guestOS.
 # Ensure this port number is available.
-dbhport: '5433'
+dbhport: '5436'
 # Nodejs debug port on the host OS outside the guestOS.
 debugport: '9229'
