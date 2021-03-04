@@ -1,10 +1,11 @@
 ---
+postgres_users_no_log: true
 pm_env_str: >
   PORT={{ remote_port }}
   USR={{ app_user }}
   DB={{ db_name }}
-  PASSWD={{ app_user_passwd }}
-  DBPORT={{ remote_dbport }}
+  PASSWD={{ app_user_system_password }}
+  DBPORT={{ remote_db_port }}
 
 # Ansible inventory file used by playbook: provision_debian.yml.
 # This file is created if it doesn't already exist.
@@ -17,18 +18,16 @@ global_node_packages:
   - {name: 'sequelize-cli', version: '^6.2.0'}
 
 git_repo: https://github.com/JerryShockley/cbrm.git
-# git_repo: git@github.com:JerryShockley/express-hello-world-app.git
 # nodejs_install_npm_user: "{{ ansible_user }}"
 # Priviliged user (with sudo privileges) used to ssh into server.
-privileged_user: priv_user
+privileged_user: master
+privileged_user_sys_password: "{{ vault_privileged_user_sys_password }}"
 # Unpriviliged user (without sudo privileges) used to operate server
 # infrastructure.
-app_user: app_user
 # To create db and roles. Not a superuser.
+app_user: auser
+app_user_sys_password: "{{ vault_app_user_sys_password }}"
 
-app_user_passwd: hello
-
-admin_db_user: "{{ privileged_user }}"
 # Postgresql driver for Python3
 postgresql_python_library: python3-psycopg2
 
@@ -42,25 +41,3 @@ postgresql_global_config_options:
     value: '{{ postgresql_unix_socket_directories | join(",") }}'
   - option: listen_addresses
     value: "*"
-
-postgresql_users:
-  - name: "{{ admin_db_user }}"
-    password: hello
-    # password: !vault |
-    #       $ANSIBLE_VAULT;1.1;AES256
-    #       33333464643931333232636635643738636337613135343531333064633831313261303664356535
-    #       3836303165646664393439633733643532626133613036330a633033643266376362636538343835
-    #       63366664643536303866383161616561373362303335313664323064363065653338643061663665
-    #       6564366165626337390a653833353431613963323264386463393936313433613535623437366263
-    #       3731
-    role_attr_flags: CREATEDB,CREATEROLE,LOGIN
-
-  - name: "{{ app_user }}"
-    password: hello
-    # password: !vault |
-    #       $ANSIBLE_VAULT;1.1;AES256
-    #       65616665383532623232663561306436353134393239363963336237313333373365336433313966
-    #       6163656235383266653037333032363335393165306531620a306161333635666165383634643232
-    #       39313266656435393236336463643432383663393434623533633737393134383465633134613463
-    #       3736353933646639630a323730336466343833306330373164326534623637333364623364313131
-    #       6662

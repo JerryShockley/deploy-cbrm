@@ -4,6 +4,7 @@
   become: true
 
   vars_files:
+    - vars/vault.yml
     - vars/main.yml
   roles:
     # This must run before role edit_inventory file as the username
@@ -11,8 +12,11 @@
     - role: jerryshockley.secure_ssh
       vars:
         users:
-          - {name: "{{ privileged_user }}", ssh_key_file: ~/.ssh/id_rsa.pub}
-          - {name: "{{ app_user }}"}
+          - name: "{{ privileged_user }}"
+            sys_password: "{{ vault_privileged_user_sys_password }}"
+            ssh_key_file: "~/.ssh/id_rsa.pub"
+          - name: "{{ app_user }}"
+            sys_password: "{{ vault_app_user_sys_password }}"
       when: ansible_user != 'vagrant'
 
   # Update ansible_user in hosts file to match the privileged
@@ -30,12 +34,15 @@
         host_file: "{{ inventory_file }}"
 
   vars_files:
+    - vars/vault.yml
     - vars/main.yml
     - vars/digital_ocean.yml
 
 - hosts: all
   become: true
-  vars_files: vars/main.yml
+  vars_files:
+    - vars/vault.yml
+    - vars/main.yml
 
   roles:
     - geerlingguy.git
