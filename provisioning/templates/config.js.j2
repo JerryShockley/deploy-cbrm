@@ -2,16 +2,16 @@ module.exports = {
   development: {
     username: `vagrant`,
     password: `hello`,
-    database: `dev_cbrm`,
+    database: `{{ db_name }}`,
     host: `127.0.0.1`,
-    port: `{{ host_db_port }}`,
-    dialect: postgres,
+    port: {{ remote_db_port }},
+    dialect: `postgres`,
   },
   production: {
     username: `{{ app_user }}`,
     password: process.env.CBRM_DB_PASSWORD,
     database: `{{ db_name }}`,
     host: `{{ ansible_host }}`,
-    dialect: postgres,
+    dialect: `postgres`,
   },
 }
