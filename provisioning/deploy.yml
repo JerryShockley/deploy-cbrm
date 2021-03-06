@@ -56,7 +56,7 @@
 
     - name: Start Node app using Process Manager.
       ansible.builtin.shell:
-        cmd: pm2 start ecosystem.config.js
+        cmd: npm run dev_start
         chdir: "{{ node_app_location }}"
       when: app_updated
       become: true
