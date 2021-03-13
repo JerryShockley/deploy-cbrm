@@ -8,6 +8,7 @@
   gather_facts: false
 
   vars_files:
+    - vars/vault.yml
     - vars/digital_ocean.yml
 
   tasks:
@@ -42,7 +43,7 @@
     - name: Remove host by ip address from ssh known_hosts file.
       lineinfile:
         path: ~/.ssh/known_hosts
-        regex: "^{{ hostvars[host_alias]['ansible_host'] }}"
+        regex: "^{{ ansible_host }}"
         state: absent
       listen: Removed droplet
 
@@ -52,6 +53,7 @@
         regex: " {{ net_hostname }}"
         state: absent
       become: true
+      failed_when: false
       listen: Removed droplet
 
     - name: Remove hosts file.
