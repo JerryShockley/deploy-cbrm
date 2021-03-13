@@ -6,17 +6,27 @@
   vars_files:
     - vars/vault.yml
     - vars/main.yml
-  roles:
+    - vars/nonvagrant_vars.yml
+  tasks:
     # This must run before role edit_inventory file as the username
     # for logging is changed from the default root to privileged_user.
-    - role: jerryshockley.secure_ssh
+    - include_tasks: secure_ssh.yml
       vars:
         users:
           - name: "{{ privileged_user }}"
-            sys_password: "{{ vault_privileged_user_sys_password }}"
-            ssh_key_file: "~/.ssh/id_rsa.pub"
+            ssh_key:  "{{ lookup('file', 'files/jerry_id_rsa.pub') }}"
+            ugroups:
+              - sudo
+              - "{{ app_usr_group }}"
+          - name: jenna
+            ssh_key:  "{{ lookup('file', 'files/jenna_id_rsa.pub') }}"
+            ugroups:
+              - sudo
+              - "{{ app_usr_group }}"
           - name: "{{ app_user }}"
-            sys_password: "{{ vault_app_user_sys_password }}"
+            ugroup: "{{ app_usr_group }}"
+        ugroups:
+          - "{{ app_usr_group }}"
       when: ansible_user != 'vagrant'
 
   # Update ansible_user in hosts file to match the privileged
@@ -26,17 +36,17 @@
   connection: localhost
   gather_facts: false
 
-  roles:
-    - role: jerryshockley.edit_inventory_file
-      when: ansible_user != 'vagrant'
-      vars:
-        host_user: "{{ privileged_user }}"
-        host_file: "{{ inventory_file }}"
-
   vars_files:
     - vars/vault.yml
     - vars/main.yml
     - vars/digital_ocean.yml
+    - vars/edit_inventory_file.yml
+  tasks:
+    - include_tasks: edit_inventory_file.yml
+      when: ansible_user != 'vagrant'
+      vars:
+        host_user: "{{ lookup('env', 'USER') }}"
+        host_file: "{{ inventory_file }}"
 
 - hosts: all
   become: true
@@ -49,8 +59,11 @@
     - jasonheecs.ubuntu-fail2ban
     - weareinteractive.nodejs
 
-
   tasks:
+    - name: Update OS.
+      apt:
+        update_cache: true
+        upgrade: full
 
     - name: Install OS utility packages.
       apt:
@@ -59,10 +72,12 @@
         cache_valid_time: 7200
       loop:
         - acl # Install setfacl support for Ansible installs.
+        - aptitude
         - apt-transport-https
         - ca-certificates
         - build-essential
         - gnupg2
+        - authbind # Let's PM2 listen to 80 sans root.
 
     - name: Include vagrant variables.
       include_vars:
@@ -101,14 +116,6 @@
         obj_type: database
       become: true
       become_user: postgres
-
-    # - name: Create www root dir.
-    #   file:
-    #     path: "{{ www_root_dir }}"
-    #     mode: 0600
-    #     group: "{{ app_user }}"
-    #     owner: "{{ app_user }}"
-    #     state: directory
 
   # Deploy application
 - import_playbook: deploy.yml
