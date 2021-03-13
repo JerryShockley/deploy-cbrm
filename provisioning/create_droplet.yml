@@ -9,11 +9,13 @@
   gather_facts: false
 
   vars_files:
+    - vars/vault.yml
     - vars/digital_ocean.yml
+    - vars/edit_inventory_file.yml
 
   tasks:
     - name: Create Digital Ocean Droplet
-      digital_ocean_droplet:
+      community.digitalocean.digital_ocean_droplet:
         unique_name: true
         image: "{{ droplet_image }}"
         region: "{{ droplet_region }}"
@@ -27,7 +29,7 @@
       register: do
       notify: new droplet
 
-    - debug:
+    - ansible.builtin.debug:
         msg: >
           Droplet:
 
@@ -35,8 +37,7 @@
           IP is {{ do.data.ip_address }}
 
     - name: Update ansible hosts file.
-      include_role:
-        name: jerryshockley.edit_inventory_file
+      include_tasks: edit_inventory_file.yml
       vars:
         host_user: root
         host_name: "{{ do.data.ip_address }}"
@@ -44,22 +45,23 @@
 
   handlers:
     - name: Add in-memory host for newly created droplet
-      add_host:
+      ansible.builtin.add_host:
         name: "{{ do.data.ip_address }}"
         ansible_user: root
       listen: new droplet
       # when: do.data is defined
 
-    - name: update system /etc/hosts file
-      lineinfile:
-        path: /etc/hosts
-        regex: "{{ net_hostname }}"
-        line: "{{ do.data.ip_address }} {{ net_hostname }}"
-      become: true
-      listen: new droplet
+    # - name: update system /etc/hosts file
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/hosts
+    #     regex: "{{ net_hostname }}"
+    #     line: "{{ do.data.ip_address }} {{ net_hostname }}"
+    #   become: true
+    #   become_user: root
+    #   listen: new droplet
 
     - name: create do tag.
-      digital_ocean_tag:
+      community.digitalocean.digital_ocean_tag:
         name: test-droplet-tag
         resource_id: "{{ do.data.droplet.id }}"
         state: present
@@ -69,6 +71,6 @@
       listen: new droplet
 
     - name: Waiting for droplet DNS to propagate
-      pause:
+      ansible.builtin.pause:
         seconds: 30
       listen: new droplet
