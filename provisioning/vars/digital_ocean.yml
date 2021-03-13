@@ -2,29 +2,20 @@
 # Inventory file
 inventory_file: hosts
 # Ansibled inventory host alias
-host_alias: test_droplet
+host_alias: cbrm
 # Network domain name.
-net_hostname: myapp.org
+net_hostname: cbrm.org
 # Ansible host file group name
 inventory_group: primary
 # File path to ssh public fingerprint.
 ssh_public_fingerprint_file: ~/.ssh/id_rsa.pub.md5.fingerprint
 # DO droplet_name is also added to hosts file as the host alias.
-droplet_name: test-droplet
+droplet_name: cbrm-droplet
 # OS image token as defined by DO
-droplet_image: ubuntu-18-04-x64
+droplet_image: ubuntu-20-04-x64
 # Virtual server token as defined by DO
 droplet_size_id: s-1vcpu-1gb
 # Server location token as defined by DO
-droplet_region: nyc1
+droplet_region: AMS3
 # Ansible encrypted DO account token ID used to validate a user via DO API.
-do_token: !vault |
-  $ANSIBLE_VAULT;1.1;AES256
-  38656639373332386564613039356437363266313933393637623734633061343832373666323262
-  6538623961383264356166306133643163396636383036660a376463303761306166663762316164
-  65643130303464353065633134373033383730643733623036616466333632646665633564343734
-  3136356634663163360a383933666264616564373161643566393966646161383165613532363239
-  63653739353730356365303733313535383136366639653263393836333138396430373331626531
-  61363461336463633264323237626562386135356538643663613831616631646635646366393366
-  30343933323035376537356562333565333932663431306232623163643664306232323439646463
-  39316263333439616666
+do_token: "{{ vault_do_token }}"
