@@ -1,17 +1,20 @@
 module.exports = {
   development: {
     username: `vagrant`,
-    password: `{{ dev_db_password }}`,
-    database: `{{ db_name }}`,
+    password: null,
+    database: `{{ dev_db_name }}`,
     host: `127.0.0.1`,
-    port: {{ remote_db_port }},
+    port: {{ remote_db_port | default(5432) }},
     dialect: `postgres`,
   },
   production: {
     username: `{{ app_user }}`,
-    password: process.env.CBRM_DB_PASSWORD,
-    database: `{{ db_name }}`,
-    host: `{{ ansible_host }}`,
+    database: `{{ prod_db_name }}`,
+    port: {{ remote_db_port | default(5432) }},
     dialect: `postgres`,
+    dialectOptions: {
+      socketPath: `/var/run/postgresql/.s.PGSQL.{{ remote_db_port |
+      default(5432) }}`
+    }
   },
 }
