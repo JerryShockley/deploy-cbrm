@@ -20,3 +20,5 @@ tags
 /bower_components/
 
 provisioning/hosts
+
+provisioning/test.yml
