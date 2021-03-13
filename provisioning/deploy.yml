@@ -1,5 +1,4 @@
 ---
-
 - hosts: all
   gather_facts: false
   become: true
@@ -8,7 +7,18 @@
     - vars/vault.yml
     - vars/main.yml
 
+
   tasks:
+    - name: Include vagrant variables.
+      include_vars:
+        file: vars/vagrant_vars.yml
+      when: ansible_user == 'vagrant'
+
+    - name: Include non-vagrant variables.
+      include_vars:
+        file: vars/nonvagrant_vars.yml
+      when: ansible_user != 'vagrant'
+
     - name: Ensure Node.js app folder exists.
       ansible.builtin.file:
         path: "{{ node_app_location }}"
@@ -23,41 +33,165 @@
         version: HEAD
       register: app_updated
 
+    - name: Create app config directory.
+      ansible.builtin.file:
+        path: "{{ node_app_location }}/config"
+        state: directory
+        mode: "0660"
+        owner: "{{ app_user }}"
+      become: true
 
     - name: Apply App DB config template.
       ansible.builtin.template:
         src: "{{ playbook_dir }}/templates/config.js.j2"
         dest: "{{ node_app_location }}/config/config.js"
         owner: "{{ app_user }}"
-        group: "{{ app_user }}"
-        mode: "0644"
+        mode: "0660"
+      become: true
+
+    - name: Set owner and groups on app files.
+      ansible.builtin.command:
+        cmd: "chown -R {{ app_user }}:{{ app_usr_group }} {{ node_app_location }}"
+      register: perm_set
+      when: app_updated and ansible_user != 'vagrant'
+      become: true
+      when: ansible_user != 'vagrant'
+
+    - name: Set permissions on app files.
+      ansible.builtin.command:
+        cmd: "chmod -R 777 {{ node_app_location }}"
+      register: perm_set
+      when: app_updated and ansible_user != 'vagrant'
+      become: true
+      when: ansible_user != 'vagrant'
+
+    - name: Make entry point executable.
+      ansible.builtin.file:
+        path: "{{ node_app_location }}/bin/index.js"
+        mode: '0770'
+      when: ansible_user != 'vagrant'
+
+    - name: Set system-wide NODE_ENV environment variable.
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        regexp: NODE_ENV=(?!{{ node_env }})
+        line: NODE_ENV={{ node_env }}
+      become: true
+      when: ansible_user != 'vagrant'
+
+    - name: Add authbind config file.
+      ansible.builtin.file:
+        path: /etc/authbind/byport/80
+        group: "{{ app_usr_group }}"
+        owner: "{{ app_user }}"
+        mode: '0755'
+        state: touch
+      when: ansible_user != 'vagrant'
+
+    - name: Set system-wide pm2 alias invoking authbind for login users.
+      ansible.builtin.lineinfile:
+        path: /etc/profile
+        regexp: alias pm2='authbind --deep pm2'
+        line: alias pm2='authbind --deep pm2'
+      become: true
+      when: ansible_user != 'vagrant'
+
+    - name: Set environment variables and aliases for nonlogin users.
+      ansible.builtin.lineinfile:
+        path: /home/{{ app_user }}/.bashrc
+        regexp: "{{ item.regex }}"
+        line: "{{ item.rline }}"
+      loop:
+        - {
+            regex: "NODE_ENV=(?!{{ node_env }})",
+            rline: "NODE_ENV={{ node_env }}"
+          }
+        - {
+            regex: '^alias pm2=',
+            rline: alias pm2='authbind --deep pm2'
+          }
+      become: true
+      when: ansible_user != 'vagrant'
+
+    - name: Ensure that pm2 is updated with authbind.
+      ansible.builtin.command:
+        cmd: authbind --deep pm2 update
+        chdir: "{{ node_app_location }}"
+      become: true
+      when: ansible_user != 'vagrant'
+
+    - name: Reset connection so NODE_ENV and pm2 alias will be present.
+      meta: reset_connection
+      become: true
+      when: ansible_user != 'vagrant'
 
     - name: Install app dependencies defined in package.json.
       ansible.builtin.command:
         cmd: npm install
         chdir: "{{ node_app_location }}"
-
-    - name: Set owner and groups on app files.
-      ansible.builtin.command:
-        cmd: "chown -R {{ app_user }}:{{ app_user }} {{ node_app_location }}"
-      register: perm_set
-      when: app_updated and ansible_user != 'vagrant'
       become: true
+      become_user: "{{ app_user }}"
 
     - name: Run DB migrations to create tables.
       ansible.builtin.command:
         cmd: "npx sequelize db:migrate"
         chdir: "{{ node_app_location }}"
+      when: app_updated
+      environment:
+        NODE_ENV: "{{ node_env }}"
+      become: true
+      become_user: "{{ app_user }}"
 
     - name: Seed DB.
       ansible.builtin.command:
         cmd: "npx sequelize db:seed:all"
         chdir: "{{ node_app_location }}"
+      when: app_updated
+      failed_when: false
+      environment:
+        NODE_ENV: "{{ node_env }}"
+      become: true
+      become_user: "{{ app_user }}"
 
     - name: Start Node app using Process Manager.
       ansible.builtin.shell:
-        cmd: npm run dev_start
+        cmd: "{{ pm2_cmd }}"
         chdir: "{{ node_app_location }}"
-      when: app_updated
+      environment:
+        NODE_ENV: "{{ node_env }}"
       become: true
       become_user: "{{ app_user }}"
+
+    - name: Save pm2 app list/config for restore/reboot operation.
+      ansible.builtin.shell:
+        cmd: pm2 save
+        chdir: "{{ node_app_location }}"
+      become: true
+      become_user: "{{ app_user }}"
+      when: ansible_user != 'vagrant'
+
+    - name: Place systemd PM2 restart config file.
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/templates/pm2.service.j2"
+        dest: /etc/systemd/system/pm2-{{ app_user }}.service
+        owner: root
+        mode: '0644'
+      become: true
+      when: ansible_user != 'vagrant'
+
+    - name: Enable PM2 restart on reboot.
+      ansible.builtin.systemd:
+        name: pm2-{{ app_user }}
+        enabled: true
+        masked: false
+      become: true
+      become_user: "{{ app_user }}"
+      when: ansible_user != 'vagrant'
+
+    - name: Reboot server to complete upgrades and validate restart script.
+      ansible.builtin.shell:
+        cmd: sudo reboot
+        chdir: "{{ node_app_location }}"
+      failed_when: false
+      become: yes
+      when: ansible_user != 'vagrant'
