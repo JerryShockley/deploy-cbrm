@@ -1,11 +1,13 @@
 module.exports = {
   development: {
     username: `vagrant`,
-    password: null,
     database: `{{ dev_db_name }}`,
-    host: `127.0.0.1`,
     port: {{ remote_db_port | default(5432) }},
     dialect: `postgres`,
+    dialectOptions: {
+      socketPath: `/var/run/postgresql/.s.PGSQL.{{ remote_db_port |
+      default(5432) }}`
+    }
   },
   production: {
     username: `{{ app_user }}`,
