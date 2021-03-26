@@ -183,9 +183,9 @@
       ansible.builtin.systemd:
         name: pm2-{{ app_user }}
         enabled: true
+        daemon-reload: true
         masked: false
       become: true
-      become_user: "{{ app_user }}"
       when: ansible_user != 'vagrant'
 
     - name: Reboot server to complete upgrades and validate restart script.
