@@ -18,4 +18,5 @@ droplet_size_id: s-1vcpu-1gb
 # Server location token as defined by DO
 droplet_region: AMS3
 # Ansible encrypted DO account token ID used to validate a user via DO API.
-do_token: "{{ vault_do_token }}"
+dev_do_token: "{{ vault_do_token }}"
+do_token: "{{ vault_do_token_cbrm }}"
