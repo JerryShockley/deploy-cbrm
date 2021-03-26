@@ -1,5 +1,6 @@
 ---
 pm2_cmd: authbind --deep pm2 start ecosystem.config.js --env production
+pm2_reload_cmd: authbind --deep pm2 reload ecosystem.config.js --env production
 # pm2_cmd: >
 #   /usr/bin/authbind --deep /usr/lib/node_modules/pm2/bin/pm2
 #   start ecosystem.config.js --env production
