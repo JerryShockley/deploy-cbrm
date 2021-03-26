@@ -13,7 +13,7 @@ Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/u
 Environment=PM2_HOME=/home/{{ app_user }}/.pm2
 PIDFile=/home/{{ app_user }}/.pm2/pm2.pid
 Restart=on-failure
-
+WorkingDirectory=/var/www/cbrm
 ExecStart=/usr/bin/authbind --deep /usr/lib/node_modules/pm2/bin/pm2 resurrect
 ExecReload=/usr/bin/authbind --deep /usr/lib/node_modules/pm2/bin/pm2 reload all
 ExecStop=/usr/bin/authbind --deep /usr/lib/node_modules/pm2/bin/pm2 kill
