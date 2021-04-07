@@ -142,17 +142,6 @@
       become: true
       become_user: "{{ app_user }}"
 
-    - name: Seed DB.
-      ansible.builtin.command:
-        cmd: "npx sequelize db:seed:all"
-        chdir: "{{ node_app_location }}"
-      when: app_updated
-      failed_when: false
-      environment:
-        NODE_ENV: "{{ node_env }}"
-      become: true
-      become_user: "{{ app_user }}"
-
     - name: Start Node app using Process Manager.
       ansible.builtin.shell:
         cmd: "{{ pm2_cmd }}"
