@@ -55,7 +55,6 @@
       register: perm_set
       when: app_updated and ansible_user != 'vagrant'
       become: true
-      when: ansible_user != 'vagrant'
 
     - name: Set permissions on app files.
       ansible.builtin.command:
@@ -63,7 +62,6 @@
       register: perm_set
       when: app_updated and ansible_user != 'vagrant'
       become: true
-      when: ansible_user != 'vagrant'
 
     - name: Make entry point executable.
       ansible.builtin.file:
