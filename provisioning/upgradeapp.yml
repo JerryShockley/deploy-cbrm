@@ -22,7 +22,7 @@
     - name: Check out app from Github.
       ansible.builtin.git:
         repo: "{{ git_repo }}"
-        dest: "{{ node_app_location }}"
+        dest: "{{ app_location }}"
         accept_hostkey: true
         force: true
         version: HEAD
@@ -30,7 +30,7 @@
 
     - name: Create app config directory.
       ansible.builtin.file:
-        path: "{{ node_app_location }}/config"
+        path: "{{ app_location }}/config"
         state: directory
         mode: "0660"
         owner: "{{ app_user }}"
@@ -39,14 +39,14 @@
     - name: Apply App DB config template.
       ansible.builtin.template:
         src: "{{ playbook_dir }}/templates/config.js.j2"
-        dest: "{{ node_app_location }}/config/config.js"
+        dest: "{{ app_location }}/config/config.js"
         owner: "{{ app_user }}"
         mode: "0660"
       become: true
 
     - name: Set owner and groups on app files.
       ansible.builtin.command:
-        cmd: "chown -R {{ app_user }}:{{ app_usr_group }} {{ node_app_location }}"
+        cmd: "chown -R {{ app_user }}:{{ app_usr_group }} {{ app_location }}"
       register: perm_set
       when: app_updated and ansible_user != 'vagrant'
       become: true
@@ -54,7 +54,7 @@
 
     - name: Set permissions on app files.
       ansible.builtin.command:
-        cmd: "chmod -R 777 {{ node_app_location }}"
+        cmd: "chmod -R 777 {{ app_location }}"
       register: perm_set
       when: app_updated and ansible_user != 'vagrant'
       become: true
@@ -62,21 +62,21 @@
 
     - name: Make entry point executable.
       ansible.builtin.file:
-        path: "{{ node_app_location }}/bin/index.js"
+        path: "{{ app_location }}/bin/index.js"
         mode: '0770'
       when: ansible_user != 'vagrant'
 
     - name: Install app dependencies defined in package.json.
       ansible.builtin.command:
         cmd: npm install
-        chdir: "{{ node_app_location }}"
+        chdir: "{{ app_location }}"
       become: true
       become_user: "{{ app_user }}"
 
     - name: Reload Node app using Process Manager.
       ansible.builtin.shell:
         cmd: "{{ pm2_reload_cmd }}"
-        chdir: "{{ node_app_location }}"
+        chdir: "{{ app_location }}"
       environment:
         NODE_ENV: "{{ node_env }}"
       become: true
@@ -85,7 +85,7 @@
     - name: Save pm2 app list/config for restore/reboot operation.
       ansible.builtin.shell:
         cmd: pm2 save
-        chdir: "{{ node_app_location }}"
+        chdir: "{{ app_location }}"
       become: true
       become_user: "{{ app_user }}"
       when: ansible_user != 'vagrant'

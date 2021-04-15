@@ -50,7 +50,7 @@ Vagrant.configure("2") do |config|
       remote_port: guest_port,
       remote_db_port:  guest_db_port,
       debug_port: "9229",
-      node_app_location: guest_sync_dir,
+      app_location: guest_sync_dir,
       privileged_user: "vagrant",
       app_user: "vagrant",
       node_env: "development"
